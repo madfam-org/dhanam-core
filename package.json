@@ -1,0 +1,34 @@
+{
+  "name": "dhanam-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open core of Dhanam — personal-finance budgeting, tracking of finances & assets, and wealth planning",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:api": "pnpm --filter @dhanam-core/api dev",
+    "dev:web": "pnpm --filter @dhanam-core/web dev",
+    "build": "turbo build",
+    "build:packages": "turbo build --filter='./packages/*'",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "db:generate": "pnpm --filter @dhanam-core/api db:generate",
+    "db:push": "pnpm --filter @dhanam-core/api db:push",
+    "db:migrate:dev": "pnpm --filter @dhanam-core/api db:migrate:dev",
+    "db:studio": "pnpm --filter @dhanam-core/api db:studio"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "prettier": "^3.6.2",
+    "turbo": "2.8.1",
+    "typescript": "^5.9.3"
+  }
+}

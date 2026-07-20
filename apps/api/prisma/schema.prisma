@@ -1,0 +1,1491 @@
+// dhanam-core Prisma schema (AGPL-3.0-or-later).
+//
+// This is the OPEN-CORE data model: personal-finance budgeting, tracking of
+// finances & assets, and wealth planning. Proprietary models (billing,
+// subscriptions/pricing, payment-processor connect/marketplace, provider
+// connections, KYC, ESG, usage metering, transaction execution/orders,
+// compliance bridges, platform config, marketing) are intentionally absent.
+//
+// Setup: this schema has no bundled migrations. Create the schema with
+//   pnpm --filter @dhanam-core/api db:push
+// (prisma db push), or generate your own initial migration with
+//   prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ──────────────────────────────────────────────────────────────────
+
+enum SpaceType {
+  personal
+  business
+}
+
+enum SpaceRole {
+  owner
+  admin
+  member
+  viewer
+}
+
+enum AccountType {
+  checking
+  savings
+  credit
+  investment
+  crypto
+  other
+}
+
+enum BudgetPeriod {
+  weekly
+  biweekly
+  monthly
+  quarterly
+  yearly
+}
+
+enum Currency {
+  MXN
+  USD
+  EUR
+  CAD
+}
+
+enum ManualAssetType {
+  real_estate
+  vehicle
+  domain
+  private_equity
+  angel_investment
+  collectible
+  art
+  jewelry
+  other
+}
+
+enum PECashFlowType {
+  capital_call
+  distribution
+  management_fee
+  carry
+  recallable
+}
+
+enum AccountOwnership {
+  individual
+  joint
+  trust
+}
+
+enum RecurrenceFrequency {
+  daily
+  weekly
+  biweekly
+  monthly
+  quarterly
+  yearly
+}
+
+enum RecurringStatus {
+  detected
+  confirmed
+  dismissed
+  paused
+}
+
+enum SubscriptionStatus {
+  active
+  paused
+  cancelled
+  trial
+  expired
+}
+
+enum SubscriptionCategory {
+  streaming
+  software
+  utilities
+  fitness
+  news
+  gaming
+  food
+  other
+}
+
+enum CategoryGoalType {
+  monthly_spending
+  target_balance
+  weekly_spending
+  percentage_income
+}
+
+enum GoalType {
+  retirement
+  education
+  house_purchase
+  emergency_fund
+  legacy
+  travel
+  business
+  debt_payoff
+  other
+}
+
+enum GoalStatus {
+  active
+  paused
+  achieved
+  abandoned
+}
+
+enum GoalShareRole {
+  viewer
+  contributor
+  editor
+  manager
+}
+
+enum GoalShareStatus {
+  pending
+  accepted
+  declined
+  revoked
+}
+
+enum GoalActivityAction {
+  created
+  updated
+  shared
+  share_accepted
+  share_declined
+  contribution_added
+  probability_improved
+  probability_declined
+  milestone_reached
+  target_date_extended
+  target_amount_adjusted
+  allocation_updated
+  what_if_scenario_run
+  comment_added
+  achieved
+  paused
+  abandoned
+}
+
+enum HouseholdType {
+  family
+  trust
+  estate
+  partnership
+  owner_operator
+}
+
+enum RelationshipType {
+  spouse
+  partner
+  child
+  parent
+  sibling
+  grandparent
+  grandchild
+  dependent
+  trustee
+  beneficiary
+  other
+}
+
+enum SimulationType {
+  monte_carlo
+  retirement
+  goal_probability
+  safe_withdrawal
+  scenario_analysis
+}
+
+enum WillStatus {
+  draft
+  active
+  revoked
+  executed
+}
+
+enum AssetType {
+  bank_account
+  investment_account
+  crypto_account
+  real_estate
+  business_interest
+  personal_property
+  other
+}
+
+enum ReportFormat {
+  pdf
+  csv
+  excel
+  json
+}
+
+enum ReportShareStatus {
+  pending
+  accepted
+  declined
+  revoked
+}
+
+enum DocumentCategory {
+  bank_statement
+  tax_document
+  csv_import
+  receipt
+  invoice
+  contract
+  insurance
+  appraisal
+  deed
+  title
+  certificate
+  statement
+  photo
+  general
+}
+
+enum DocumentStatus {
+  pending_upload
+  uploaded
+  processing
+  ready
+  failed
+}
+
+// ─── Identity & preferences ───────────────────────────────────────────────────
+
+model User {
+  id                    String    @id @default(uuid())
+  /// @pii
+  email                 String    @unique
+  /// @pii @sensitive
+  passwordHash          String    @map("password_hash")
+  /// @pii
+  name                  String
+  /// @pii
+  dateOfBirth           DateTime? @map("date_of_birth") @db.Date
+  locale                String    @default("es")
+  timezone              String    @default("America/Mexico_City")
+  /// @pii @sensitive
+  totpSecret            String?   @map("totp_secret")
+  /// @pii @sensitive
+  totpTempSecret        String?   @map("totp_temp_secret")
+  totpEnabled           Boolean   @default(false) @map("totp_enabled")
+  totpBackupCodes       String[]  @default([]) @map("totp_backup_codes")
+  emailVerified         Boolean   @default(false) @map("email_verified")
+  isActive              Boolean   @default(true) @map("is_active")
+  isAdmin               Boolean   @default(false) @map("is_admin")
+  onboardingCompleted   Boolean   @default(false) @map("onboarding_completed")
+  onboardingCompletedAt DateTime? @map("onboarding_completed_at")
+  onboardingStep        String?   @map("onboarding_step")
+  lastLoginAt           DateTime? @map("last_login_at")
+  lastActivityAt        DateTime? @map("last_activity_at")
+
+  // Life Beat (Dead Man's Switch) settings
+  lifeBeatEnabled       Boolean   @default(false) @map("life_beat_enabled")
+  lifeBeatAlertDays     Int[]     @default([30, 60, 90]) @map("life_beat_alert_days")
+  lifeBeatLegalAgreedAt DateTime? @map("life_beat_legal_agreed_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relations
+  userSpaces          UserSpace[]
+  sessions            Session[]
+  auditLogs           AuditLog[]
+  preferences         UserPreferences?
+  householdMembers    HouseholdMember[]
+  simulations         Simulation[]
+  ownedAccounts       Account[] // For "Yours/Mine/Ours" visibility
+  transactionSplits   TransactionSplit[]
+  sharedAccounts      AccountSharingPermission[] @relation("SharedAccounts")
+  createdGoals        Goal[]                     @relation("GoalCreator")
+  goalShares          GoalShare[]                @relation("GoalShares")
+  sentGoalInvites     GoalShare[]                @relation("GoalInvites")
+  goalActivities      GoalActivity[]             @relation("GoalActivities")
+  notifications       UserNotification[]
+  inactivityAlerts    InactivityAlert[]
+  executorAssignments ExecutorAssignment[]       @relation("AccountHolder")
+  assignedAsExecutor  ExecutorAssignment[]       @relation("Executor")
+  savedReports        SavedReport[]              @relation("SavedReportCreator")
+  generatedReports    GeneratedReport[]          @relation("GeneratedReports")
+  reportShares        ReportShare[]              @relation("ReportShares")
+  reportInvites       ReportShare[]              @relation("ReportInvites")
+  reportShareTokens   ReportShareToken[]         @relation("ReportShareTokens")
+  beneficialOwnerHouseholds Household[]          @relation("BeneficialOwner")
+
+  @@index([onboardingCompleted, createdAt(sort: Desc)])
+  @@index([lastLoginAt(sort: Desc)])
+  @@index([lastActivityAt])
+  @@index([lifeBeatEnabled])
+  @@map("users")
+}
+
+model UserPreferences {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+
+  emailNotifications Boolean @default(true) @map("email_notifications")
+  transactionAlerts  Boolean @default(true) @map("transaction_alerts")
+  budgetAlerts       Boolean @default(true) @map("budget_alerts")
+  weeklyReports      Boolean @default(true) @map("weekly_reports")
+  monthlyReports     Boolean @default(true) @map("monthly_reports")
+  securityAlerts     Boolean @default(true) @map("security_alerts")
+  promotionalEmails  Boolean @default(false) @map("promotional_emails")
+
+  pushNotifications Boolean @default(true) @map("push_notifications")
+  transactionPush   Boolean @default(true) @map("transaction_push")
+  budgetPush        Boolean @default(true) @map("budget_push")
+  securityPush      Boolean @default(true) @map("security_push")
+
+  dataSharing       Boolean @default(false) @map("data_sharing")
+  analyticsTracking Boolean @default(true) @map("analytics_tracking")
+  personalizedAds   Boolean @default(false) @map("personalized_ads")
+
+  dashboardLayout String  @default("standard") @map("dashboard_layout")
+  chartType       String  @default("line") @map("chart_type")
+  themeMode       String  @default("light") @map("theme_mode")
+  compactView     Boolean @default(false) @map("compact_view")
+  showBalances    Boolean @default(true) @map("show_balances")
+
+  defaultCurrency    Currency @default(MXN) @map("default_currency")
+  hideSensitiveData  Boolean  @default(false) @map("hide_sensitive_data")
+  autoCategorizeTxns Boolean  @default(true) @map("auto_categorize_txns")
+  includeWeekends    Boolean  @default(true) @map("include_weekends")
+
+  // Sustainability preference toggles (UI-visibility flags only).
+  esgScoreVisibility   Boolean @default(true) @map("esg_score_visibility")
+  sustainabilityAlerts Boolean @default(false) @map("sustainability_alerts")
+  impactReporting      Boolean @default(false) @map("impact_reporting")
+
+  autoBackup      Boolean @default(false) @map("auto_backup")
+  backupFrequency String? @map("backup_frequency")
+  exportFormat    String  @default("csv") @map("export_format")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model UserNotification {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  type      String
+  title     String
+  message   String
+  metadata  Json?
+  read      Boolean   @default(false)
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([type])
+  @@map("user_notifications")
+}
+
+// Life Beat (Dead Man's Switch) - Inactivity Alerts
+model InactivityAlert {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  alertLevel  Int       @map("alert_level")
+  sentAt      DateTime  @default(now()) @map("sent_at")
+  channel     String    @default("email")
+  responded   Boolean   @default(false)
+  respondedAt DateTime? @map("responded_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, alertLevel, sentAt])
+  @@index([userId, alertLevel])
+  @@index([sentAt(sort: Desc)])
+  @@map("inactivity_alerts")
+}
+
+model ExecutorAssignment {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  executorEmail   String    @map("executor_email")
+  executorName    String    @map("executor_name")
+  executorUserId  String?   @map("executor_user_id")
+  relationship    String
+  priority        Int       @default(1)
+  verified        Boolean   @default(false)
+  verifiedAt      DateTime? @map("verified_at")
+  accessGranted   Boolean   @default(false) @map("access_granted")
+  accessGrantedAt DateTime? @map("access_granted_at")
+  accessExpiresAt DateTime? @map("access_expires_at")
+  accessToken     String?   @unique @map("access_token")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  accountHolder User  @relation("AccountHolder", fields: [userId], references: [id], onDelete: Cascade)
+  executor      User? @relation("Executor", fields: [executorUserId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, executorEmail])
+  @@index([userId])
+  @@index([executorUserId])
+  @@index([accessToken])
+  @@map("executor_assignments")
+}
+
+model ExecutorAccessLog {
+  id                   String   @id @default(uuid())
+  executorAssignmentId String   @map("executor_assignment_id")
+  action               String
+  resourceType         String?  @map("resource_type")
+  resourceId           String?  @map("resource_id")
+  ipAddress            String?  @map("ip_address")
+  userAgent            String?  @map("user_agent")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  @@index([executorAssignmentId, createdAt(sort: Desc)])
+  @@map("executor_access_logs")
+}
+
+model Session {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  tokenFamily      String   @unique @map("token_family")
+  refreshTokenHash String   @map("refresh_token_hash")
+  expiresAt        DateTime @map("expires_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenFamily])
+  @@map("sessions")
+}
+
+// ─── Spaces & households ──────────────────────────────────────────────────────
+
+model Space {
+  id          String    @id @default(uuid())
+  name        String
+  type        SpaceType
+  currency    Currency  @default(MXN)
+  timezone    String    @default("America/Mexico_City")
+  householdId String?   @map("household_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  household         Household?         @relation(fields: [householdId], references: [id], onDelete: SetNull)
+  userSpaces        UserSpace[]
+  accounts          Account[]
+  budgets           Budget[]
+  transactionRules  TransactionRule[]
+  goals             Goal[]
+  simulations       Simulation[]
+  manualAssets      ManualAsset[]
+  documents         Document[]
+  subscriptions     Subscription[]
+  incomeEvents      IncomeEvent[]
+  savedReports      SavedReport[]
+  generatedReports  GeneratedReport[]
+  cashflowForecasts CashflowForecast[]
+  tags              Tag[]
+
+  @@index([householdId])
+  @@index([deletedAt])
+  @@map("spaces")
+}
+
+model UserSpace {
+  userId    String    @map("user_id")
+  spaceId   String    @map("space_id")
+  role      SpaceRole
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@id([userId, spaceId])
+  @@map("user_spaces")
+}
+
+model Household {
+  id                    String        @id @default(uuid())
+  name                  String
+  type                  HouseholdType @default(family)
+  baseCurrency          Currency      @default(USD)
+  description           String?
+  beneficialOwnerUserId String?       @map("beneficial_owner_user_id")
+  metadata              Json?
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
+
+  beneficialOwner User?             @relation("BeneficialOwner", fields: [beneficialOwnerUserId], references: [id], onDelete: SetNull)
+  members         HouseholdMember[]
+  spaces          Space[]
+  goals           Goal[]
+  wills           Will[]
+
+  @@index([createdAt])
+  @@index([beneficialOwnerUserId])
+  @@index([type])
+  @@map("households")
+}
+
+model HouseholdMember {
+  id              String           @id @default(uuid())
+  householdId     String           @map("household_id")
+  userId          String           @map("user_id")
+  relationship    RelationshipType
+  isMinor         Boolean          @default(false) @map("is_minor")
+  accessStartDate DateTime?        @map("access_start_date") @db.Date
+  notes           String?
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  household               Household                @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  user                    User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  beneficiaryDesignations BeneficiaryDesignation[]
+  willExecutorRoles       WillExecutor[]
+
+  @@unique([householdId, userId])
+  @@index([householdId])
+  @@index([userId])
+  @@map("household_members")
+}
+
+// ─── Accounts & transactions ──────────────────────────────────────────────────
+
+model Account {
+  id                   String           @id @default(uuid())
+  spaceId              String           @map("space_id")
+  // Origin of the account. dhanam-core only creates "manual" accounts; kept as a
+  // plain string so self-hosters can add their own aggregation origins.
+  provider             String           @default("manual")
+  providerAccountId    String?          @map("provider_account_id")
+  name                 String
+  type                 AccountType
+  subtype              String?
+  currency             Currency
+  balance              Decimal          @default(0) @db.Decimal(19, 4)
+  ownership            AccountOwnership @default(individual)
+  ownerId              String?          @map("owner_id")
+  encryptedCredentials Json?            @map("encrypted_credentials")
+  metadata             Json?
+  lastSyncedAt         DateTime?        @map("last_synced_at")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+  deletedAt            DateTime?        @map("deleted_at")
+
+  // Liability-specific fields (credit cards, loans, mortgages)
+  liabilityType      String?   @map("liability_type")
+  apr                Decimal?  @db.Decimal(6, 4)
+  minimumPayment     Decimal?  @map("minimum_payment") @db.Decimal(19, 4)
+  nextPaymentDueDate DateTime? @map("next_payment_due_date") @db.Date
+  lastPaymentAmount  Decimal?  @map("last_payment_amount") @db.Decimal(19, 4)
+  lastPaymentDate    DateTime? @map("last_payment_date") @db.Date
+  isOverdue          Boolean   @default(false) @map("is_overdue")
+  creditLimit        Decimal?  @map("credit_limit") @db.Decimal(19, 4)
+  originationDate    DateTime? @map("origination_date") @db.Date
+  originalPrincipal  Decimal?  @map("original_principal") @db.Decimal(19, 4)
+
+  space              Space                      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  owner              User?                      @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  transactions       Transaction[]
+  assetValuations    AssetValuation[]
+  goalAllocations    GoalAllocation[]
+  sharingPermissions AccountSharingPermission[]
+
+  @@unique([spaceId, provider, providerAccountId])
+  @@index([spaceId])
+  @@index([spaceId, ownership])
+  @@index([spaceId, ownerId])
+  @@index([spaceId, lastSyncedAt(sort: Desc)])
+  @@index([spaceId, deletedAt])
+  @@map("accounts")
+}
+
+model Transaction {
+  id                    String    @id @default(uuid())
+  accountId             String    @map("account_id")
+  providerTransactionId String?   @map("provider_transaction_id")
+  amount                Decimal   @db.Decimal(19, 4)
+  currency              Currency
+  description           String
+  merchant              String?
+  categoryId            String?   @map("category_id")
+  recurringId           String?   @map("recurring_id")
+  date                  DateTime  @db.Date
+  pending               Boolean   @default(false)
+  isSplit               Boolean   @default(false) @map("is_split")
+  reviewed              Boolean   @default(false)
+  reviewedAt            DateTime? @map("reviewed_at")
+  metadata              Json?
+  excludeFromTotals     Boolean   @default(false) @map("exclude_from_totals")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
+
+  account   Account               @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category  Category?             @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  recurring RecurringTransaction? @relation(fields: [recurringId], references: [id], onDelete: SetNull)
+  splits    TransactionSplit[]
+  tags      TransactionTag[]
+
+  @@unique([accountId, providerTransactionId])
+  @@index([accountId, date(sort: Desc)])
+  @@index([categoryId])
+  @@index([accountId, categoryId])
+  @@index([pending])
+  @@index([isSplit])
+  @@index([recurringId])
+  @@index([accountId, date(sort: Desc), deletedAt])
+  @@map("transactions")
+}
+
+model TransactionSplit {
+  id            String   @id @default(uuid())
+  transactionId String   @map("transaction_id")
+  userId        String   @map("user_id")
+  amount        Decimal  @db.Decimal(19, 4)
+  percentage    Decimal? @db.Decimal(5, 2)
+  note          String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([transactionId, userId])
+  @@index([userId])
+  @@index([transactionId])
+  @@map("transaction_splits")
+}
+
+model CategoryCorrection {
+  id                  String   @id @default(uuid())
+  spaceId             String   @map("space_id")
+  transactionId       String   @map("transaction_id")
+  originalCategoryId  String?  @map("original_category_id")
+  correctedCategoryId String   @map("corrected_category_id")
+  merchantPattern     String?  @map("merchant_pattern")
+  descriptionPattern  String?  @map("description_pattern")
+  confidence          Decimal? @db.Decimal(3, 2)
+  createdBy           String   @map("created_by")
+  appliedToFuture     Boolean  @default(true) @map("applied_to_future")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@index([spaceId, merchantPattern])
+  @@index([spaceId, createdAt(sort: Desc)])
+  @@index([correctedCategoryId])
+  @@map("category_corrections")
+}
+
+model AccountSharingPermission {
+  id           String    @id @default(uuid())
+  accountId    String    @map("account_id")
+  sharedWithId String    @map("shared_with_id")
+  canView      Boolean   @default(true) @map("can_view")
+  canEdit      Boolean   @default(false) @map("can_edit")
+  canDelete    Boolean   @default(false) @map("can_delete")
+  expiresAt    DateTime? @map("expires_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  account    Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  sharedWith User    @relation("SharedAccounts", fields: [sharedWithId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, sharedWithId])
+  @@index([sharedWithId])
+  @@index([accountId, canView])
+  @@map("account_sharing_permissions")
+}
+
+// ─── Recurring & subscriptions (spend tracking) ───────────────────────────────
+
+model RecurringTransaction {
+  id              String              @id @default(uuid())
+  spaceId         String              @map("space_id")
+  merchantName    String              @map("merchant_name")
+  merchantPattern String?             @map("merchant_pattern")
+  expectedAmount  Decimal             @map("expected_amount") @db.Decimal(19, 4)
+  amountVariance  Decimal             @default(0.1) @map("amount_variance") @db.Decimal(5, 2)
+  currency        Currency
+  frequency       RecurrenceFrequency
+  status          RecurringStatus     @default(detected)
+  categoryId      String?             @map("category_id")
+
+  lastOccurrence  DateTime? @map("last_occurrence") @db.Date
+  nextExpected    DateTime? @map("next_expected") @db.Date
+  occurrenceCount Int       @default(0) @map("occurrence_count")
+  confidence      Decimal   @default(0) @map("confidence") @db.Decimal(3, 2)
+
+  firstDetectedAt DateTime  @default(now()) @map("first_detected_at")
+  confirmedAt     DateTime? @map("confirmed_at")
+  dismissedAt     DateTime? @map("dismissed_at")
+
+  alertBeforeDays Int     @default(3) @map("alert_before_days")
+  alertEnabled    Boolean @default(true) @map("alert_enabled")
+
+  notes     String?
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  transactions Transaction[]
+  subscription Subscription?
+
+  @@unique([spaceId, merchantName, frequency])
+  @@index([spaceId, status])
+  @@index([spaceId, nextExpected])
+  @@index([status, nextExpected])
+  @@map("recurring_transactions")
+}
+
+model Subscription {
+  id          String  @id @default(uuid())
+  spaceId     String  @map("space_id")
+  recurringId String? @unique @map("recurring_id")
+
+  serviceName String               @map("service_name")
+  serviceUrl  String?              @map("service_url")
+  serviceIcon String?              @map("service_icon")
+  category    SubscriptionCategory @default(other)
+  description String?
+
+  amount          Decimal             @db.Decimal(19, 4)
+  currency        Currency
+  billingCycle    RecurrenceFrequency @map("billing_cycle")
+  nextBillingDate DateTime?           @map("next_billing_date") @db.Date
+  lastBillingDate DateTime?           @map("last_billing_date") @db.Date
+
+  status             SubscriptionStatus @default(active)
+  startDate          DateTime           @map("start_date") @db.Date
+  endDate            DateTime?          @map("end_date") @db.Date
+  trialEndDate       DateTime?          @map("trial_end_date") @db.Date
+  cancelledAt        DateTime?          @map("cancelled_at")
+  cancellationReason String?            @map("cancellation_reason")
+
+  annualCost            Decimal @map("annual_cost") @db.Decimal(19, 4)
+  usageFrequency        String? @map("usage_frequency")
+  savingsRecommendation String? @map("savings_recommendation")
+  alternativeServices   Json?   @map("alternative_services")
+
+  alertBeforeDays Int     @default(3) @map("alert_before_days")
+  alertEnabled    Boolean @default(true) @map("alert_enabled")
+
+  notes     String?
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  space            Space                 @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  recurringPattern RecurringTransaction? @relation(fields: [recurringId], references: [id], onDelete: SetNull)
+
+  @@unique([spaceId, serviceName])
+  @@index([spaceId, status])
+  @@index([spaceId, nextBillingDate])
+  @@index([status, nextBillingDate])
+  @@map("subscriptions")
+}
+
+// ─── Budgets & categories (zero-based budgeting) ──────────────────────────────
+
+model Budget {
+  id              String       @id @default(uuid())
+  spaceId         String       @map("space_id")
+  name            String
+  period          BudgetPeriod
+  startDate       DateTime     @map("start_date") @db.Date
+  endDate         DateTime?    @map("end_date") @db.Date
+  customStartDay  Int?         @map("custom_start_day")
+  customEndDay    Int?         @map("custom_end_day")
+  income          Decimal      @default(0) @db.Decimal(19, 4)
+  rolloverEnabled Boolean      @default(false) @map("rollover_enabled")
+  metadata        Json?
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  space      Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  categories Category[]
+
+  @@index([spaceId])
+  @@map("budgets")
+}
+
+model Category {
+  id                String   @id @default(uuid())
+  budgetId          String   @map("budget_id")
+  name              String
+  budgetedAmount    Decimal  @map("budgeted_amount") @db.Decimal(19, 4)
+  carryoverAmount   Decimal  @default(0) @map("carryover_amount") @db.Decimal(19, 4)
+  icon              String?
+  color             String?
+  description       String?
+  isIncome          Boolean  @default(false) @map("is_income")
+  excludeFromBudget Boolean  @default(false) @map("exclude_from_budget")
+  excludeFromTotals Boolean  @default(false) @map("exclude_from_totals")
+  groupName         String?  @map("group_name")
+  sortOrder         Int      @default(0) @map("sort_order")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  budget       Budget             @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  rules        TransactionRule[]
+  allocations  IncomeAllocation[]
+  goal         CategoryGoal?
+
+  @@unique([budgetId, name])
+  @@index([budgetId])
+  @@map("categories")
+}
+
+model IncomeEvent {
+  id          String   @id @default(uuid())
+  spaceId     String   @map("space_id")
+  amount      Decimal  @db.Decimal(19, 4)
+  currency    Currency
+  source      String
+  description String?
+  receivedAt  DateTime @map("received_at")
+  isAllocated Boolean  @default(false) @map("is_allocated")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  space       Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  allocations IncomeAllocation[]
+
+  @@index([spaceId, receivedAt(sort: Desc)])
+  @@index([spaceId, isAllocated])
+  @@map("income_events")
+}
+
+model IncomeAllocation {
+  id            String   @id @default(uuid())
+  incomeEventId String   @map("income_event_id")
+  categoryId    String   @map("category_id")
+  amount        Decimal  @db.Decimal(19, 4)
+  notes         String?
+  allocatedAt   DateTime @default(now()) @map("allocated_at")
+
+  incomeEvent IncomeEvent @relation(fields: [incomeEventId], references: [id], onDelete: Cascade)
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([incomeEventId])
+  @@index([categoryId])
+  @@map("income_allocations")
+}
+
+model CategoryGoal {
+  id               String           @id @default(uuid())
+  categoryId       String           @unique @map("category_id")
+  goalType         CategoryGoalType @map("goal_type")
+  targetAmount     Decimal?         @map("target_amount") @db.Decimal(19, 4)
+  targetDate       DateTime?        @map("target_date") @db.Date
+  monthlyFunding   Decimal?         @map("monthly_funding") @db.Decimal(19, 4)
+  percentageTarget Decimal?         @map("percentage_target") @db.Decimal(5, 2)
+  notes            String?
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("category_goals")
+}
+
+model TransactionRule {
+  id         String   @id @default(uuid())
+  spaceId    String   @map("space_id")
+  name       String
+  conditions Json
+  categoryId String?  @map("category_id")
+  actions    Json?
+  priority   Int      @default(0)
+  enabled    Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  space    Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([spaceId, enabled])
+  @@map("transaction_rules")
+}
+
+// ─── Assets & valuations ──────────────────────────────────────────────────────
+
+model AssetValuation {
+  id        String   @id @default(uuid())
+  accountId String   @map("account_id")
+  date      DateTime @db.Date
+  value     Decimal  @db.Decimal(19, 4)
+  currency  Currency
+  createdAt DateTime @default(now()) @map("created_at")
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, date])
+  @@index([accountId, date(sort: Desc)])
+  @@map("asset_valuations")
+}
+
+model ManualAsset {
+  id              String          @id @default(uuid())
+  spaceId         String          @map("space_id")
+  name            String
+  type            ManualAssetType
+  description     String?
+  currentValue    Decimal         @map("current_value") @db.Decimal(19, 4)
+  currency        Currency
+  acquisitionDate DateTime?       @map("acquisition_date") @db.Date
+  acquisitionCost Decimal?        @map("acquisition_cost") @db.Decimal(19, 4)
+  metadata        Json?
+  documents       Json?
+  notes           String?
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  space            Space                   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  valuationHistory ManualAssetValuation[]
+  cashFlows        PrivateEquityCashFlow[]
+
+  @@index([spaceId])
+  @@index([type])
+  @@map("manual_assets")
+}
+
+model ManualAssetValuation {
+  id        String   @id @default(uuid())
+  assetId   String   @map("asset_id")
+  date      DateTime @db.Date
+  value     Decimal  @db.Decimal(19, 4)
+  currency  Currency
+  source    String?
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  asset ManualAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, date])
+  @@index([assetId, date(sort: Desc)])
+  @@map("manual_asset_valuations")
+}
+
+model PrivateEquityCashFlow {
+  id          String         @id @default(uuid())
+  assetId     String         @map("asset_id")
+  type        PECashFlowType
+  amount      Decimal        @db.Decimal(19, 4)
+  currency    Currency
+  date        DateTime       @db.Date
+  description String?
+  notes       String?
+  metadata    Json?
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  asset ManualAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([assetId, date(sort: Desc)])
+  @@index([assetId, type])
+  @@map("private_equity_cash_flows")
+}
+
+// ─── Goals & simulations ──────────────────────────────────────────────────────
+
+model Goal {
+  id           String     @id @default(uuid())
+  spaceId      String     @map("space_id")
+  householdId  String?    @map("household_id")
+  name         String
+  description  String?
+  type         GoalType
+  targetAmount Decimal    @db.Decimal(19, 4)
+  currency     Currency   @default(USD)
+  targetDate   DateTime   @db.Date
+  priority     Int        @default(1)
+  status       GoalStatus @default(active)
+  notes        String?
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  // Probabilistic planning (Monte Carlo)
+  currentProbability  Decimal?  @map("current_probability") @db.Decimal(5, 2)
+  confidenceLow       Decimal?  @map("confidence_low") @db.Decimal(19, 4)
+  confidenceHigh      Decimal?  @map("confidence_high") @db.Decimal(19, 4)
+  lastSimulationAt    DateTime? @map("last_simulation_at")
+  probabilityHistory  Json?     @map("probability_history")
+  currentProgress     Decimal?  @map("current_progress") @db.Decimal(5, 2)
+  projectedCompletion DateTime? @map("projected_completion") @db.Date
+
+  expectedReturn      Decimal? @map("expected_return") @db.Decimal(5, 4)
+  volatility          Decimal? @map("volatility") @db.Decimal(5, 4)
+  monthlyContribution Decimal? @map("monthly_contribution") @db.Decimal(19, 4)
+
+  createdBy         String? @map("created_by")
+  isShared          Boolean @default(false) @map("is_shared")
+  sharedWithMessage String? @map("shared_with_message")
+
+  space       Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  household   Household?       @relation(fields: [householdId], references: [id], onDelete: SetNull)
+  creator     User?            @relation("GoalCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  allocations GoalAllocation[]
+  simulations Simulation[]
+  shares      GoalShare[]
+  activities  GoalActivity[]
+
+  @@index([spaceId, status])
+  @@index([spaceId, createdAt(sort: Desc)])
+  @@index([householdId])
+  @@index([currentProbability])
+  @@index([createdBy])
+  @@index([isShared])
+  @@index([status, updatedAt(sort: Desc)])
+  @@map("goals")
+}
+
+model GoalAllocation {
+  id         String   @id @default(uuid())
+  goalId     String   @map("goal_id")
+  accountId  String   @map("account_id")
+  percentage Decimal  @db.Decimal(5, 2)
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  goal    Goal    @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([goalId, accountId])
+  @@index([goalId])
+  @@index([accountId])
+  @@map("goal_allocations")
+}
+
+model GoalShare {
+  id         String          @id @default(uuid())
+  goalId     String          @map("goal_id")
+  sharedWith String          @map("shared_with")
+  role       GoalShareRole   @default(viewer)
+  invitedBy  String          @map("invited_by")
+  status     GoalShareStatus @default(pending)
+  message    String?
+  acceptedAt DateTime?       @map("accepted_at")
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
+
+  goal    Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  user    User @relation("GoalShares", fields: [sharedWith], references: [id], onDelete: Cascade)
+  inviter User @relation("GoalInvites", fields: [invitedBy], references: [id], onDelete: Cascade)
+
+  @@unique([goalId, sharedWith])
+  @@index([goalId])
+  @@index([sharedWith])
+  @@index([status])
+  @@map("goal_shares")
+}
+
+model GoalActivity {
+  id        String             @id @default(uuid())
+  goalId    String             @map("goal_id")
+  userId    String             @map("user_id")
+  action    GoalActivityAction
+  metadata  Json?
+  createdAt DateTime           @default(now()) @map("created_at")
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  user User @relation("GoalActivities", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([goalId, createdAt(sort: Desc)])
+  @@index([userId])
+  @@map("goal_activities")
+}
+
+model Simulation {
+  id              String         @id @default(uuid())
+  userId          String         @map("user_id")
+  spaceId         String?        @map("space_id")
+  goalId          String?        @map("goal_id")
+  type            SimulationType
+  config          Json
+  result          Json?
+  status          String         @default("pending")
+  errorMessage    String?        @map("error_message")
+  executionTimeMs Int?           @map("execution_time_ms")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  space Space? @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  goal  Goal?  @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([spaceId])
+  @@index([goalId])
+  @@index([type])
+  @@map("simulations")
+}
+
+// ─── Estate planning ──────────────────────────────────────────────────────────
+
+model Will {
+  id              String     @id @default(uuid())
+  householdId     String     @map("household_id")
+  name            String
+  status          WillStatus @default(draft)
+  lastReviewedAt  DateTime?  @map("last_reviewed_at")
+  activatedAt     DateTime?  @map("activated_at")
+  revokedAt       DateTime?  @map("revoked_at")
+  executedAt      DateTime?  @map("executed_at")
+  notes           String?    @db.Text
+  legalDisclaimer Boolean    @default(false) @map("legal_disclaimer")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  household     Household                @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  beneficiaries BeneficiaryDesignation[]
+  executors     WillExecutor[]
+
+  @@index([householdId])
+  @@index([status])
+  @@map("wills")
+}
+
+model BeneficiaryDesignation {
+  id            String    @id @default(uuid())
+  willId        String    @map("will_id")
+  beneficiaryId String    @map("beneficiary_id")
+  assetType     AssetType
+  assetId       String?   @map("asset_id")
+  percentage    Decimal   @db.Decimal(5, 2)
+  conditions    Json?
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  will        Will            @relation(fields: [willId], references: [id], onDelete: Cascade)
+  beneficiary HouseholdMember @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+
+  @@index([willId])
+  @@index([beneficiaryId])
+  @@map("beneficiary_designations")
+}
+
+model WillExecutor {
+  id         String    @id @default(uuid())
+  willId     String    @map("will_id")
+  executorId String    @map("executor_id")
+  isPrimary  Boolean   @default(false) @map("is_primary")
+  order      Int       @default(1)
+  acceptedAt DateTime? @map("accepted_at")
+  notes      String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  will     Will            @relation(fields: [willId], references: [id], onDelete: Cascade)
+  executor HouseholdMember @relation(fields: [executorId], references: [id], onDelete: Cascade)
+
+  @@index([willId])
+  @@index([executorId])
+  @@map("will_executors")
+}
+
+// ─── Documents & reports ──────────────────────────────────────────────────────
+
+model Document {
+  id            String           @id @default(uuid())
+  spaceId       String           @map("space_id")
+  uploadedBy    String           @map("uploaded_by")
+  filename      String
+  contentType   String           @map("content_type")
+  fileSize      Int              @map("file_size")
+  r2Key         String           @unique @map("r2_key")
+  category      DocumentCategory @default(general)
+  status        DocumentStatus   @default(pending_upload)
+  manualAssetId String?          @map("manual_asset_id")
+  accountId     String?          @map("account_id")
+  csvPreview    Json?            @map("csv_preview")
+  csvMapping    Json?            @map("csv_mapping")
+  errorMessage  String?          @map("error_message")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  deletedAt     DateTime?        @map("deleted_at")
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, status])
+  @@index([spaceId, category])
+  @@index([spaceId, createdAt(sort: Desc)])
+  @@index([uploadedBy])
+  @@map("documents")
+}
+
+model SavedReport {
+  id          String       @id @default(cuid())
+  spaceId     String       @map("space_id")
+  createdBy   String       @map("created_by")
+  name        String
+  description String?
+  type        String
+  schedule    String?
+  format      ReportFormat @default(pdf)
+  filters     Json?
+  enabled     Boolean      @default(true)
+  isShared    Boolean      @default(false) @map("is_shared")
+  lastRunAt   DateTime?    @map("last_run_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  space            Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  creator          User               @relation("SavedReportCreator", fields: [createdBy], references: [id])
+  generatedReports GeneratedReport[]
+  shares           ReportShare[]
+  shareTokens      ReportShareToken[]
+
+  @@index([spaceId])
+  @@index([createdBy])
+  @@map("saved_reports")
+}
+
+model GeneratedReport {
+  id            String       @id @default(cuid())
+  savedReportId String       @map("saved_report_id")
+  spaceId       String       @map("space_id")
+  generatedBy   String       @map("generated_by")
+  format        ReportFormat
+  startDate     DateTime     @map("start_date") @db.Date
+  endDate       DateTime     @map("end_date") @db.Date
+  r2Key         String       @map("r2_key")
+  fileSize      Int          @map("file_size")
+  downloadCount Int          @default(0) @map("download_count")
+  expiresAt     DateTime?    @map("expires_at")
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  savedReport SavedReport @relation(fields: [savedReportId], references: [id], onDelete: Cascade)
+  space       Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  generator   User        @relation("GeneratedReports", fields: [generatedBy], references: [id])
+
+  @@index([savedReportId])
+  @@index([spaceId, createdAt(sort: Desc)])
+  @@map("generated_reports")
+}
+
+model ReportShare {
+  id         String            @id @default(uuid())
+  reportId   String            @map("report_id")
+  sharedWith String            @map("shared_with")
+  invitedBy  String            @map("invited_by")
+  role       String            @default("viewer")
+  status     ReportShareStatus @default(pending)
+  message    String?
+  acceptedAt DateTime?         @map("accepted_at")
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
+
+  report  SavedReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  user    User        @relation("ReportShares", fields: [sharedWith], references: [id], onDelete: Cascade)
+  inviter User        @relation("ReportInvites", fields: [invitedBy], references: [id], onDelete: Cascade)
+
+  @@unique([reportId, sharedWith])
+  @@index([sharedWith, status])
+  @@map("report_shares")
+}
+
+model ReportShareToken {
+  id                String    @id @default(cuid())
+  reportId          String    @map("report_id")
+  generatedReportId String?   @map("generated_report_id")
+  token             String    @unique
+  createdBy         String    @map("created_by")
+  accessCount       Int       @default(0) @map("access_count")
+  maxAccess         Int?      @map("max_access")
+  expiresAt         DateTime  @map("expires_at")
+  revokedAt         DateTime? @map("revoked_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  report  SavedReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  creator User        @relation("ReportShareTokens", fields: [createdBy], references: [id])
+
+  @@index([token])
+  @@index([reportId])
+  @@map("report_share_tokens")
+}
+
+model CashflowForecast {
+  id          String   @id @default(cuid())
+  spaceId     String   @map("space_id")
+  startDate   DateTime @map("start_date") @db.Date
+  endDate     DateTime @map("end_date") @db.Date
+  weeks       Json
+  confidence  Float    @default(0.85)
+  generatedAt DateTime @default(now()) @map("generated_at")
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId])
+  @@map("cashflow_forecasts")
+}
+
+// ─── Tags ─────────────────────────────────────────────────────────────────────
+
+model Tag {
+  id          String   @id @default(uuid())
+  spaceId     String   @map("space_id")
+  name        String
+  description String?
+  color       String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  space        Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  transactions TransactionTag[]
+
+  @@unique([spaceId, name])
+  @@index([spaceId, sortOrder])
+  @@map("tags")
+}
+
+model TransactionTag {
+  transactionId String @map("transaction_id")
+  tagId         String @map("tag_id")
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  tag         Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([transactionId, tagId])
+  @@index([tagId])
+  @@map("transaction_tags")
+}
+
+// ─── FX rates ─────────────────────────────────────────────────────────────────
+
+model ExchangeRate {
+  id           String   @id @default(uuid())
+  fromCurrency Currency @map("from_currency")
+  toCurrency   Currency @map("to_currency")
+  rate         Float
+  date         DateTime @db.Date
+  source       String   @default("banxico")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([fromCurrency, toCurrency, date])
+  @@index([fromCurrency, toCurrency])
+  @@index([date])
+  @@map("exchange_rates")
+}
+
+model FxRateObservation {
+  id           String   @id @default(uuid())
+  fromCurrency String   @map("from_currency")
+  toCurrency   String   @map("to_currency")
+  rateType     String   @map("rate_type")
+  rate         Decimal  @db.Decimal(18, 8)
+  source       String
+  providerId   String?  @map("provider_id")
+  paymentId    String?  @map("payment_id")
+  observedAt   DateTime @map("observed_at")
+  effectiveAt  DateTime @map("effective_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([fromCurrency, toCurrency, rateType, effectiveAt(sort: Desc)])
+  @@index([fromCurrency, toCurrency, rateType, observedAt(sort: Desc)])
+  @@index([paymentId])
+  @@map("fx_rate_observations")
+}
+
+model FxRatePublication {
+  id            String   @id @default(uuid())
+  fromCurrency  String   @map("from_currency")
+  toCurrency    String   @map("to_currency")
+  effectiveDate DateTime @map("effective_date") @db.Date
+  rate          Decimal  @db.Decimal(18, 8)
+  source        String
+  providerId    String?  @map("provider_id")
+  publishedAt   DateTime @map("published_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([fromCurrency, toCurrency, effectiveDate], name: "fromCurrency_toCurrency_effectiveDate")
+  @@index([fromCurrency, toCurrency, effectiveDate(sort: Desc)])
+  @@map("fx_rate_publications")
+}
+
+model FxRateOverride {
+  id           String    @id @default(uuid())
+  fromCurrency String    @map("from_currency")
+  toCurrency   String    @map("to_currency")
+  rateType     String    @map("rate_type")
+  rate         Decimal   @db.Decimal(18, 8)
+  rationale    String
+  issuedBy     String    @map("issued_by")
+  approvedBy   String?   @map("approved_by")
+  expiresAt    DateTime? @map("expires_at")
+  revokedAt    DateTime? @map("revoked_at")
+  revokedBy    String?   @map("revoked_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([fromCurrency, toCurrency, rateType, expiresAt])
+  @@index([revokedAt])
+  @@map("fx_rate_overrides")
+}
+
+// ─── Infrastructure ───────────────────────────────────────────────────────────
+
+model AuditLog {
+  id          String    @id @default(uuid())
+  userId      String?   @map("user_id")
+  action      String
+  resource    String?
+  resourceId  String?   @map("resource_id")
+  metadata    String?
+  ipAddress   String?   @map("ip_address")
+  userAgent   String?   @map("user_agent")
+  severity    String    @default("low")
+  timestamp   DateTime  @default(now())
+  createdAt   DateTime  @default(now()) @map("created_at")
+  deletedAt   DateTime? @map("deleted_at")
+  retainUntil DateTime? @map("retain_until")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, action, timestamp(sort: Desc)])
+  @@index([resource, resourceId])
+  @@index([severity, timestamp(sort: Desc)])
+  @@map("audit_logs")
+}
+
+model ErrorLog {
+  id        String   @id @default(uuid())
+  timestamp DateTime @default(now())
+  level     String
+  message   String
+  stack     String?
+  context   Json?
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([timestamp])
+  @@index([level])
+  @@index([message])
+  @@map("error_logs")
+}

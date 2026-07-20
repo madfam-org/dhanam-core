@@ -1,0 +1,54 @@
+{
+  "name": "@dhanam-core/shared",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./i18n/server": {
+      "types": "./dist/i18n/server.d.ts",
+      "import": "./dist/i18n/server.mjs",
+      "require": "./dist/i18n/server.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/madfam-org/dhanam-core.git",
+    "directory": "packages/shared"
+  },
+  "files": [
+    "dist/**",
+    "src/**"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "node ../../scripts/require-local-services.mjs && tsup --watch",
+    "test": "jest --passWithNoTests",
+    "typecheck": "tsc --noEmit",
+    "clean": "node ../../scripts/require-local-destructive.mjs && rm -rf dist .turbo node_modules"
+  },
+  "dependencies": {
+    "date-fns": "^3.2.0",
+    "next": "16.2.6",
+    "zod": "4.3.6"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "devDependencies": {
+    "@dhanam-core/config": "workspace:*",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.11.0",
+    "@types/react": "^19.2.15",
+    "jest": "^30.2.0",
+    "react": "19.2.6",
+    "ts-jest": "^29.4.5",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  }
+}

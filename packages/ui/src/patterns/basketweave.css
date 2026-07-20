@@ -1,0 +1,124 @@
+/**
+ * Dhanam Art Deco basketweave surface pattern.
+ *
+ * Token-driven tiling for marketing and (future) app shells.
+ * Apply `.dhanam-basketweave-surface` on a full-bleed layer behind content.
+ *
+ * Theme hooks:
+ *   --basketweave-rib-h   horizontal rib hue (HSL channels)
+ *   --basketweave-rib-v   vertical rib hue (HSL channels)
+ *   --basketweave-opacity weave strength (0–1)
+ *   --basketweave-tile     repeat period (px)
+ */
+
+.dhanam-basketweave-surface {
+  --basketweave-tile: 52px;
+  --basketweave-rib-h: 168 34% 38%;
+  --basketweave-rib-v: 32 46% 50%;
+  --basketweave-opacity: 0.06;
+  --basketweave-blend: multiply;
+
+  position: relative;
+  isolation: isolate;
+  background-color: hsl(var(--background));
+  background-image: linear-gradient(
+    180deg,
+    hsl(var(--background)) 0%,
+    hsl(var(--background) / 0.92) 42%,
+    hsl(var(--muted) / 0.22) 100%
+  );
+}
+
+.dark .dhanam-basketweave-surface,
+.dhanam-basketweave-surface:where(.dark, .dark *) {
+  --basketweave-rib-h: 168 22% 62%;
+  --basketweave-rib-v: 38 36% 68%;
+  --basketweave-opacity: 0.1;
+  --basketweave-blend: soft-light;
+}
+
+.dhanam-basketweave-surface::before,
+.dhanam-basketweave-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Horizontal ribs — satin bands */
+.dhanam-basketweave-surface::before {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent calc(var(--basketweave-tile) * 0.42),
+    hsl(var(--basketweave-rib-h) / calc(var(--basketweave-opacity) * 0.85))
+      calc(var(--basketweave-tile) * 0.42),
+    hsl(var(--basketweave-rib-h) / var(--basketweave-opacity)) calc(var(--basketweave-tile) * 0.5),
+    transparent calc(var(--basketweave-tile) * 0.58),
+    transparent var(--basketweave-tile)
+  );
+  background-size: 100% var(--basketweave-tile);
+  mix-blend-mode: var(--basketweave-blend);
+  opacity: 0.95;
+}
+
+/* Vertical ribs — offset half-tile for interlock */
+.dhanam-basketweave-surface::after {
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(var(--basketweave-tile) * 0.42),
+    hsl(var(--basketweave-rib-v) / calc(var(--basketweave-opacity) * 0.75))
+      calc(var(--basketweave-tile) * 0.42),
+    hsl(var(--basketweave-rib-v) / var(--basketweave-opacity)) calc(var(--basketweave-tile) * 0.5),
+    transparent calc(var(--basketweave-tile) * 0.58),
+    transparent var(--basketweave-tile)
+  );
+  background-size: var(--basketweave-tile) 100%;
+  background-position: calc(var(--basketweave-tile) / 2) 0;
+  mix-blend-mode: var(--basketweave-blend);
+  opacity: 0.9;
+}
+
+/* Capsule intersections — art-deco basket curve hint */
+.dhanam-basketweave-surface > .dhanam-basketweave-lattice {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: calc(var(--basketweave-opacity) * 1.35);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='52' viewBox='0 0 52 52'%3E%3Cg fill='none' stroke='%23164d45' stroke-width='1.25' stroke-linecap='round' opacity='0.55'%3E%3Cpath d='M0 13h20M32 13h20M0 39h20M32 39h20'/%3E%3Cpath d='M13 0v20M39 0v20M13 32v20M39 32v20'/%3E%3Cpath d='M20 13c6-6 6 6 12 0M20 39c6-6 6 6 12 0'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: var(--basketweave-tile) var(--basketweave-tile);
+  mask-image: radial-gradient(ellipse 120% 80% at 50% 0%, #000 0%, transparent 72%);
+}
+
+.dark .dhanam-basketweave-surface > .dhanam-basketweave-lattice,
+.dhanam-basketweave-surface:where(.dark, .dark *) > .dhanam-basketweave-lattice {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='52' viewBox='0 0 52 52'%3E%3Cg fill='none' stroke='%23a8d4cb' stroke-width='1.1' stroke-linecap='round' opacity='0.45'%3E%3Cpath d='M0 13h20M32 13h20M0 39h20M32 39h20'/%3E%3Cpath d='M13 0v20M39 0v20M13 32v20M39 32v20'/%3E%3Cpath d='M20 13c6-6 6 6 12 0M20 39c6-6 6 6 12 0'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dhanam-basketweave-surface--subtle-drift::before {
+    animation: dhanam-basketweave-drift 90s linear infinite;
+  }
+
+  .dhanam-basketweave-surface--subtle-drift::after {
+    animation: dhanam-basketweave-drift 120s linear infinite reverse;
+  }
+}
+
+@keyframes dhanam-basketweave-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: var(--basketweave-tile) var(--basketweave-tile);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dhanam-basketweave-surface--subtle-drift::before,
+  .dhanam-basketweave-surface--subtle-drift::after {
+    animation: none;
+  }
+}

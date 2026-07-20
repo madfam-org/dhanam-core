@@ -1,0 +1,28 @@
+{
+  "extends": "@dhanam-core/config/typescript/nestjs.json",
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": false,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitReturns": false,
+    "jsx": "react",
+    "lib": ["ES2022", "DOM"],
+    "paths": {
+      "~/*": ["./src/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@core/*": ["./src/core/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@db/*": ["./generated/prisma/*"],
+      "@db": ["./src/db/index"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "test", "**/*spec.ts", "src/**/__tests__/**"]
+}

@@ -1,0 +1,318 @@
+@import 'tailwindcss';
+@import '@dhanam-core/ui/patterns/basketweave.css';
+
+/*
+ * Explicit content sources (replaces v3 `content: [...]` from tailwind.config.ts).
+ * Auto-detection covers `apps/web/src` from the CSS file's location; `packages/ui`
+ * lives outside that tree, so add it explicitly.
+ */
+@source '../../src/**/*.{ts,tsx}';
+@source '../../../../packages/ui/src/**/*.{ts,tsx}';
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * DHANAM DESIGN TOKEN SYSTEM
+ *
+ * Semantic color tokens for consistent UI across the application.
+ * Use these tokens instead of hardcoded Tailwind color utilities.
+ *
+ * Usage Examples:
+ * - text-success instead of text-green-600
+ * - bg-success/10 instead of bg-green-100
+ * - text-destructive instead of text-red-600
+ * - text-info instead of text-blue-600
+ * - text-warning instead of text-yellow-600
+ *
+ * NOTE (Tailwind v4): Design tokens are declared in the `@theme` block below.
+ * The `:root` / `.dark` blocks define the raw HSL channel triplets so we can
+ * continue using `bg-foo/10` opacity modifiers (which require space-separated
+ * HSL channels). The `@theme` block then references those CSS variables via
+ * `hsl(var(--name))` so v4 generates utilities like `bg-background`,
+ * `text-foreground`, `border-border`, etc.
+ */
+
+@layer base {
+  :root {
+    /* Core UI Colors */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+
+    /* Semantic Status Colors */
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+    --info: 217.2 91.2% 59.8%;
+    --info-foreground: 0 0% 100%;
+
+    /* Extended Status Colors (for backgrounds with opacity) */
+    --success-bg: 142.1 76.2% 96%;
+    --warning-bg: 38 92% 95%;
+    --info-bg: 217.2 91.2% 96%;
+    --destructive-bg: 0 84.2% 97%;
+
+    /* Financial Context Colors */
+    --income: 142.1 76.2% 36.3%;
+    --expense: 0 84.2% 60.2%;
+    --transfer: 217.2 91.2% 59.8%;
+
+    /* Goal Health Colors (for probability indicators) */
+    --goal-excellent: 142.1 76.2% 36.3%;
+    --goal-on-track: 217.2 91.2% 59.8%;
+    --goal-attention: 38 92% 50%;
+    --goal-at-risk: 0 84.2% 60.2%;
+  }
+
+  .dark {
+    /* Core UI Colors */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+
+    /* Semantic Status Colors (Dark Mode) */
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 60%;
+    --warning-foreground: 0 0% 0%;
+    --info: 217.2 91.2% 65%;
+    --info-foreground: 0 0% 100%;
+
+    /* Extended Status Colors (Dark Mode) */
+    --success-bg: 142.1 70.6% 15%;
+    --warning-bg: 38 92% 15%;
+    --info-bg: 217.2 91.2% 15%;
+    --destructive-bg: 0 62.8% 15%;
+
+    /* Financial Context Colors (Dark Mode) */
+    --income: 142.1 70.6% 45.3%;
+    --expense: 0 62.8% 50%;
+    --transfer: 217.2 91.2% 65%;
+
+    /* Goal Health Colors (Dark Mode) */
+    --goal-excellent: 142.1 70.6% 45.3%;
+    --goal-on-track: 217.2 91.2% 65%;
+    --goal-attention: 38 92% 60%;
+    --goal-at-risk: 0 62.8% 50%;
+  }
+}
+
+/*
+ * Tailwind v4 design tokens — translated from the v3 `theme.extend` block in
+ * the (now-removed) tailwind.config.ts. These generate utility classes such as
+ * `bg-background`, `text-primary-foreground`, `border-border`, etc.
+ */
+@theme inline {
+  /* Core UI Colors */
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  /* Semantic Status Colors */
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+
+  /* Financial Context Colors */
+  --color-income: hsl(var(--income));
+  --color-expense: hsl(var(--expense));
+  --color-transfer: hsl(var(--transfer));
+
+  /* Goal Health Colors */
+  --color-goal-excellent: hsl(var(--goal-excellent));
+  --color-goal-on-track: hsl(var(--goal-on-track));
+  --color-goal-attention: hsl(var(--goal-attention));
+  --color-goal-at-risk: hsl(var(--goal-at-risk));
+
+  /* Border radius scale derived from --radius */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  /* Accordion animations (Radix UI) */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+/*
+ * v4 changed the default border color from gray-200 to currentColor for
+ * border-* utilities. Restore the v3 behaviour so existing markup that just
+ * writes `class="border"` keeps rendering with the design-token border.
+ */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: hsl(var(--border));
+  }
+}
+
+/*
+ * Container utility — v4 dropped `theme.container` config; recreate the v3
+ * behaviour (centered, padded, max-width 1400px at 2xl) as a custom utility.
+ */
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family:
+      Inter,
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      sans-serif;
+  }
+}
+
+@keyframes hero-tablet-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-tablet-flat-float {
+    animation: hero-tablet-float 4.8s ease-in-out infinite;
+  }
+}
+
+/* Landing typography — Fraunces display + DM Sans UI (Phase G) */
+.landing-root {
+  font-family: var(--font-landing-ui), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Regenerative Ledger basketweave — marketing surface tokens */
+.landing-root.landing-basketweave,
+.landing-basketweave {
+  --basketweave-rib-h: 168 36% 34%;
+  --basketweave-rib-v: 32 52% 48%;
+  --basketweave-opacity: 0.065;
+  --basketweave-tile: 52px;
+}
+
+.dark .landing-root.landing-basketweave,
+.dark .landing-basketweave,
+.landing-root.landing-basketweave:where(.dark, .dark *) {
+  --basketweave-rib-h: 168 20% 58%;
+  --basketweave-rib-v: 36 40% 66%;
+  --basketweave-opacity: 0.11;
+}
+
+.landing-root h1,
+.landing-root h2,
+.landing-root h3,
+.landing-root .landing-display {
+  font-family: var(--font-landing-display), Georgia, 'Times New Roman', serif;
+}
+
+
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
