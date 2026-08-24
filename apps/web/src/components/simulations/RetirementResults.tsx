@@ -15,8 +15,7 @@ interface RetirementResultsProps {
 export function RetirementResults({ results }: RetirementResultsProps) {
   const { accumulationPhase, withdrawalPhase, recommendations } = results;
   const simulationConfig = results.simulation.config as
-    | { monthlyContribution?: number; expectedReturn?: number; volatility?: number }
-    | undefined;
+    { monthlyContribution?: number; expectedReturn?: number; volatility?: number } | undefined;
 
   const successRate = withdrawalPhase.probabilityOfNotRunningOut;
   const isOnTrack = successRate >= 0.75;

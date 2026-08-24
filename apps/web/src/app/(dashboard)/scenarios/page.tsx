@@ -412,9 +412,7 @@ export default function ScenariosPage() {
                 <div className="rounded-full bg-muted p-4 mb-4">
                   <TrendingDown className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">
-                  {t('scenarios.page.noAnalysisYet')}
-                </h3>
+                <h3 className="font-semibold text-lg mb-2">{t('scenarios.page.noAnalysisYet')}</h3>
                 <p className="text-sm text-muted-foreground max-w-sm mb-6">
                   {t('scenarios.page.noAnalysisDescription')}
                 </p>

@@ -4,8 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
 import { PrismaService } from '@core/prisma/prisma.service';
-import { TIMEOUT_PRESETS } from '@core/utils/timeout.util';
 import { QueueService } from '@core/queue/queue.service';
+import { TIMEOUT_PRESETS } from '@core/utils/timeout.util';
 
 export interface HealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -37,7 +37,6 @@ export interface HealthCheck {
   error?: string;
   details?: Record<string, unknown>;
 }
-
 
 interface QueueStat {
   name: string;
@@ -92,13 +91,12 @@ export class HealthService {
   }
 
   async getHealthStatus(): Promise<HealthStatus> {
-    const [dbResult, redisResult, queuesResult, externalResult] =
-      await Promise.allSettled([
-        this.checkDatabase(),
-        this.checkRedis(),
-        this.checkQueues(),
-        this.checkExternalServices(),
-      ]);
+    const [dbResult, redisResult, queuesResult, externalResult] = await Promise.allSettled([
+      this.checkDatabase(),
+      this.checkRedis(),
+      this.checkQueues(),
+      this.checkExternalServices(),
+    ]);
 
     // Map core checks
     const database: HealthCheck =
@@ -370,5 +368,4 @@ export class HealthService {
       error: error instanceof Error ? error.message : 'Health check failed',
     };
   }
-
 }

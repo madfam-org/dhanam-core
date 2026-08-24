@@ -22,10 +22,9 @@ import {
 } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
+import { CASHFLOW_FORECAST_MAX_DAYS } from '@core/feature-gates';
 import { AuthenticatedRequest } from '@core/types/authenticated-request';
 import { Currency } from '@db';
-
-import { CASHFLOW_FORECAST_MAX_DAYS } from '@core/feature-gates';
 
 import {
   NetWorthHistoryPoint,
@@ -157,8 +156,7 @@ export class AnalyticsController {
   @ApiQuery({
     name: 'days',
     required: false,
-    description:
-      'Number of days to forecast (default: 60, clamped to a 365-day maximum).',
+    description: 'Number of days to forecast (default: 60, clamped to a 365-day maximum).',
   })
   @ApiOkResponse({ description: 'Cashflow forecast retrieved successfully' })
   @ApiUnauthorizedResponse({ description: 'Invalid or missing JWT token' })

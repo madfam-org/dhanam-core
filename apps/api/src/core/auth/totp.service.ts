@@ -14,8 +14,8 @@ import {
 } from '@core/exceptions/domain-exceptions';
 import { isPrismaKnownRequestError } from '@core/filters/prisma-error.guard';
 import { LoggerService } from '@core/logger/logger.service';
-import { PrismaService } from '@core/prisma/prisma.service';
 import { MailerService } from '@core/mailer/mailer.service';
+import { PrismaService } from '@core/prisma/prisma.service';
 
 export interface TotpSetupResponse {
   qrCodeUrl: string;

@@ -27,7 +27,14 @@ import { useState } from 'react';
 import { accountsApi } from '~/lib/api/accounts';
 import { useSpaceStore } from '~/stores/space';
 
-const ACCOUNT_TYPES: AccountType[] = ['checking', 'savings', 'credit', 'investment', 'crypto', 'other'];
+const ACCOUNT_TYPES: AccountType[] = [
+  'checking',
+  'savings',
+  'credit',
+  'investment',
+  'crypto',
+  'other',
+];
 const CURRENCIES: Currency[] = [Currency.MXN, Currency.USD, Currency.EUR, Currency.CAD];
 
 /**

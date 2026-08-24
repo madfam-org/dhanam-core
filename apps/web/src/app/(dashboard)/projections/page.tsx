@@ -542,9 +542,7 @@ export default function ProjectionsPage() {
                         </span>
                       </div>
                       <div className="flex justify-between pt-2 border-t">
-                        <span className="text-muted-foreground">
-                          {t('stats.minimumNetWorth')}
-                        </span>
+                        <span className="text-muted-foreground">{t('stats.minimumNetWorth')}</span>
                         <span
                           className={`font-medium ${projection.summary.minNetWorth.amount < 0 ? 'text-red-600' : ''}`}
                         >

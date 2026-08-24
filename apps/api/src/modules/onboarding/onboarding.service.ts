@@ -3,9 +3,10 @@ import { Injectable, BadRequestException, Logger, NotFoundException } from '@nes
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
+import { MailerService } from '@core/mailer/mailer.service';
+
 import { AuditService } from '../../core/audit/audit.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { MailerService } from '@core/mailer/mailer.service';
 import { PreferencesService } from '../preferences/preferences.service';
 
 import {
@@ -107,9 +108,7 @@ export class OnboardingService {
     status.space_setup = user.userSpaces.length > 0;
 
     // Add accounts - check if the user has added any accounts
-    status.connect_accounts = user.userSpaces.some(
-      (us: any) => us.space.accounts.length > 0
-    );
+    status.connect_accounts = user.userSpaces.some((us: any) => us.space.accounts.length > 0);
 
     // First budget - check if user has created budgets
     status.first_budget = user.userSpaces.some((us: any) => us.space.budgets.length > 0);

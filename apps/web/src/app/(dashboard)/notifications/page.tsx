@@ -1,7 +1,15 @@
 'use client';
 
 import { useTranslation } from '@dhanam-core/shared';
-import { Button, Card, CardContent, Tabs, TabsContent, TabsList, TabsTrigger } from '@dhanam-core/ui';
+import {
+  Button,
+  Card,
+  CardContent,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@dhanam-core/ui';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Bell,

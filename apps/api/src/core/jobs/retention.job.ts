@@ -107,5 +107,4 @@ export class RetentionJob {
       this.logger.log(`Archived ${purged} old audit logs`);
     }
   }
-
 }

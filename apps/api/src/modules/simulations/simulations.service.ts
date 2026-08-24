@@ -8,7 +8,6 @@ import {
 } from '@dhanam-core/simulations';
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 
-
 import { PrismaService } from '../../core/prisma/prisma.service';
 
 import {
@@ -23,9 +22,7 @@ import {
 export class SimulationsService {
   private readonly logger = new Logger(SimulationsService.name);
 
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Run a Monte Carlo simulation

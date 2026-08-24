@@ -25,10 +25,10 @@ import {
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
 
+import { RequiresFeature, FeatureGateGuard } from '@core/feature-gates';
+
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '../../core/types/authenticated-request';
-import { RequiresFeature } from '@core/feature-gates';
-import { FeatureGateGuard } from '@core/feature-gates';
 
 import { CreateHouseholdDto, UpdateHouseholdDto, AddMemberDto, UpdateMemberDto } from './dto';
 import { HouseholdsService } from './households.service';

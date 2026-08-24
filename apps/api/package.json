@@ -92,7 +92,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.5.0",
     "@types/passport-jwt": "^4.0.1",
-    "eslint": "^10.5.0",
+    "eslint": "^9.39.0",
     "jest": "^30.2.0",
     "prettier": "^3.8.3",
     "prisma": "7.7.0",

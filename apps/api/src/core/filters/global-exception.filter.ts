@@ -77,8 +77,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (!this.sentryService) return;
 
     const user = (request as unknown as Record<string, unknown>).user as
-      | Record<string, unknown>
-      | undefined;
+      Record<string, unknown> | undefined;
     if (user) {
       this.sentryService.setUser(user);
     }

@@ -664,8 +664,7 @@ export default function GoalsPage() {
                                 {t('probability.recommendedContribution', {
                                   recommended:
                                     probability.recommendedMonthlyContribution.toLocaleString(),
-                                  current:
-                                    probability.currentMonthlyContribution.toLocaleString(),
+                                  current: probability.currentMonthlyContribution.toLocaleString(),
                                 })}
                               </p>
                             </AlertDescription>

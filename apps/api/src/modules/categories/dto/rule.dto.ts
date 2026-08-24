@@ -24,13 +24,7 @@ export class RuleConditionDto {
   @IsString()
   @IsIn(['contains', 'equals', 'startsWith', 'endsWith', 'greaterThan', 'lessThan', 'between'])
   operator:
-    | 'contains'
-    | 'equals'
-    | 'startsWith'
-    | 'endsWith'
-    | 'greaterThan'
-    | 'lessThan'
-    | 'between';
+    'contains' | 'equals' | 'startsWith' | 'endsWith' | 'greaterThan' | 'lessThan' | 'between';
 
   @ApiProperty()
   @IsDefined()
