@@ -14,12 +14,7 @@ import { PEAnalyticsService } from './pe-analytics.service';
 import { StatementMaterializationService } from './statement-materialization.service';
 
 @Module({
-  imports: [
-    PrismaModule,
-    SpacesModule,
-    StorageModule,
-    HttpModule.register({ timeout: 60_000 }),
-  ],
+  imports: [PrismaModule, SpacesModule, StorageModule, HttpModule.register({ timeout: 60_000 })],
   controllers: [ManualAssetsController],
   providers: [
     ManualAssetsService,

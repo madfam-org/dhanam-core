@@ -25,10 +25,10 @@ import {
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 
+import { RequiresFeature, FeatureGateGuard } from '@core/feature-gates';
+
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '../../core/types/authenticated-request';
-import { RequiresFeature } from '@core/feature-gates';
-import { FeatureGateGuard } from '@core/feature-gates';
 
 import {
   CreateWillDto,

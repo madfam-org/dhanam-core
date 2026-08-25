@@ -11,10 +11,7 @@ import { Observable, Subject, filter, map, finalize } from 'rxjs';
  * - budget.alert    Budget threshold exceeded
  */
 export type RealtimeEventType =
-  | 'sync.complete'
-  | 'balance.updated'
-  | 'transaction.new'
-  | 'budget.alert';
+  'sync.complete' | 'balance.updated' | 'transaction.new' | 'budget.alert';
 
 /**
  * Payload shape sent over the SSE stream.

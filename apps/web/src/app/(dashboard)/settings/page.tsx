@@ -40,8 +40,6 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [isResetting, setIsResetting] = useState(false);
 
-
-
   const {
     data: preferences,
     isLoading,
@@ -154,7 +152,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       )}
-
 
       {/* Notifications */}
       <Card>

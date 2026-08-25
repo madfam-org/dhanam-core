@@ -5,9 +5,8 @@ import { Injectable, Logger, ForbiddenException, NotFoundException } from '@nest
 import { ConfigService } from '@nestjs/config';
 
 import { AuditService } from '@core/audit/audit.service';
-import { PrismaService } from '@core/prisma/prisma.service';
-
 import { MailerService } from '@core/mailer/mailer.service';
+import { PrismaService } from '@core/prisma/prisma.service';
 
 export interface ExecutorAccessGrant {
   accessToken: string;

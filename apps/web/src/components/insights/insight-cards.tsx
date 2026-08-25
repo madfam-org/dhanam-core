@@ -3,14 +3,7 @@
 import type { Transaction } from '@dhanam-core/shared';
 import { Card, CardContent, Button } from '@dhanam-core/ui';
 import { useQuery } from '@tanstack/react-query';
-import {
-  TrendingUp,
-  TrendingDown,
-  CreditCard,
-  PiggyBank,
-  X,
-  type LucideIcon,
-} from 'lucide-react';
+import { TrendingUp, TrendingDown, CreditCard, PiggyBank, X, type LucideIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
 

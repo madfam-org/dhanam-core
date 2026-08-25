@@ -40,7 +40,7 @@ export class DocumentsService {
     private spacesService: SpacesService,
     private r2Storage: R2StorageService,
     private auditService: AuditService,
-    private csvPreviewService: CsvPreviewService,
+    private csvPreviewService: CsvPreviewService
   ) {}
 
   // ──────────────────────────── Quota helpers ────────────────────────────

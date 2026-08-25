@@ -25,8 +25,8 @@ import Redis from 'ioredis';
 import { AuditService } from '@core/audit/audit.service';
 import { SecurityConfigService } from '@core/config/security.config';
 import { LoggerService } from '@core/logger/logger.service';
-import { PrismaService } from '@core/prisma/prisma.service';
 import { MailerService } from '@core/mailer/mailer.service';
+import { PrismaService } from '@core/prisma/prisma.service';
 import { OnboardingService } from '@modules/onboarding/onboarding.service';
 
 import { SessionService } from './session.service';

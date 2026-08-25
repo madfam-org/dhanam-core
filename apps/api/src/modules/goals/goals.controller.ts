@@ -27,13 +27,11 @@ import {
   ApiPaymentRequiredResponse,
 } from '@nestjs/swagger';
 
+import { UsageMetricType, TrackUsage, UsageLimitGuard } from '@core/feature-gates';
 import { GoalShareRole } from '@db';
-import { UsageMetricType } from '@core/feature-gates';
 
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '../../core/types/authenticated-request';
-import { TrackUsage } from '@core/feature-gates';
-import { UsageLimitGuard } from '@core/feature-gates';
 
 import { CreateGoalDto, UpdateGoalDto, AddAllocationDto } from './dto';
 import { GoalCollaborationService } from './goal-collaboration.service';
@@ -162,7 +160,6 @@ export class GoalsController {
   ) {
     await this.goalsService.removeAllocation(id, accountId, req.user.id);
   }
-
 
   @Get(':id/probability')
   @UseGuards(UsageLimitGuard)

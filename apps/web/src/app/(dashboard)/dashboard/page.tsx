@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@dhanam-core/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@dhanam-core/ui';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 

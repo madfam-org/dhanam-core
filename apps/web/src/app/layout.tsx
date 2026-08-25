@@ -14,8 +14,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'Dhanam - Budget & Wealth Tracker',
-  description:
-    'Personal-finance budgeting, tracking of finances and assets, and wealth planning.',
+  description: 'Personal-finance budgeting, tracking of finances and assets, and wealth planning.',
   metadataBase: new URL('http://localhost:3000'),
   alternates: {
     canonical: 'http://localhost:3000',
@@ -29,8 +28,7 @@ export const metadata: Metadata = {
     type: 'website',
     siteName: 'Dhanam',
     title: 'Dhanam - Budget & Wealth Tracker',
-    description:
-      'Personal-finance budgeting, tracking and wealth planning.',
+    description: 'Personal-finance budgeting, tracking and wealth planning.',
     url: 'http://localhost:3000',
     images: [
       {
@@ -44,8 +42,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Dhanam - Budget & Wealth Tracker',
-    description:
-      'Personal-finance budgeting, tracking and wealth planning.',
+    description: 'Personal-finance budgeting, tracking and wealth planning.',
     images: ['/opengraph-image'],
   },
 };
@@ -60,8 +57,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     name: 'Dhanam',
     url: 'http://localhost:3000',
     logo: 'http://localhost:3000/logo.png',
-    description:
-      'Personal-finance budgeting, tracking and wealth planning.',
+    description: 'Personal-finance budgeting, tracking and wealth planning.',
     sameAs: ['https://github.com/madfam-org/dhanam-core'],
   };
 

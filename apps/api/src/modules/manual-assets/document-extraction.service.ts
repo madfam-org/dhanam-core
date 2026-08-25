@@ -73,10 +73,14 @@ export class DocumentExtractionService {
         const data = await this.extractNative(buffer, mimeType, filename);
         return { data, engine: 'native' };
       } catch (err) {
-        this.logger.warn(`Model extraction failed: ${(err as Error).message} — manual review required`);
+        this.logger.warn(
+          `Model extraction failed: ${(err as Error).message} — manual review required`
+        );
       }
     } else {
-      this.logger.warn('OPENAI_API_KEY not set — document extraction unavailable, manual review required');
+      this.logger.warn(
+        'OPENAI_API_KEY not set — document extraction unavailable, manual review required'
+      );
     }
 
     return { data: this.manualReviewStub(filename), engine: 'none' };

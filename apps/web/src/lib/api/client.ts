@@ -1,4 +1,3 @@
-
 import { resolvePublicApiUrl } from '../routing/public-surface';
 
 export class ApiError extends Error {

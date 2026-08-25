@@ -74,9 +74,7 @@ export default function RetirementPage() {
 
                 <div className="grid grid-cols-3 gap-4 mt-6">
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">
-                      {t('retirement.finalBalance')}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t('retirement.finalBalance')}</p>
                     <p className="text-lg font-semibold">
                       $
                       {results.simulation.median.toLocaleString(undefined, {

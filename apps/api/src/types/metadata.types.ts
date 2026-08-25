@@ -62,10 +62,7 @@ export interface BelvoAccountMetadata {
 
 // Union type for all account metadata
 export type AccountMetadata =
-  | PlaidAccountMetadata
-  | BitsoAccountMetadata
-  | BlockchainAccountMetadata
-  | BelvoAccountMetadata;
+  PlaidAccountMetadata | BitsoAccountMetadata | BlockchainAccountMetadata | BelvoAccountMetadata;
 
 /**
  * Provider connection metadata types
@@ -101,9 +98,7 @@ export interface BelvoConnectionMetadata {
 }
 
 export type ProviderConnectionMetadata =
-  | PlaidConnectionMetadata
-  | BitsoConnectionMetadata
-  | BelvoConnectionMetadata;
+  PlaidConnectionMetadata | BitsoConnectionMetadata | BelvoConnectionMetadata;
 
 /**
  * Transaction metadata types
@@ -148,9 +143,7 @@ export interface BlockchainTransactionMetadata {
 }
 
 export type TransactionMetadata =
-  | ImportedTransactionMetadata
-  | ExchangeTransactionMetadata
-  | BlockchainTransactionMetadata;
+  ImportedTransactionMetadata | ExchangeTransactionMetadata | BlockchainTransactionMetadata;
 
 /**
  * Asset valuation metadata

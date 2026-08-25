@@ -17,8 +17,9 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9
+        # No explicit version: the action reads the `packageManager` pin from
+        # package.json; passing both made setup fail ("Multiple versions of
+        # pnpm specified") — the reason this workflow was red from day one.
 
       - name: Setup Node
         uses: actions/setup-node@v4

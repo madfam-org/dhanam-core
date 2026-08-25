@@ -171,7 +171,6 @@ export class TransactionsService {
       },
     });
 
-
     return transaction;
   }
 

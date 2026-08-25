@@ -149,7 +149,6 @@ export const RETRY_PRESETS: Record<string, Partial<RetryConfig>> = {
     backoffMultiplier: 2,
   },
 
-
   // Default provider retries
   provider_default: {
     maxRetries: 5,

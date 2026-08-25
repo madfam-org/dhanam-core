@@ -20,11 +20,7 @@ export class MailerService {
     this.logger.debug(`[mailer stub] would send "${kind}" email to ${to}`);
   }
 
-  async sendPasswordResetEmail(
-    to: string,
-    _name?: string | null,
-    _token?: string
-  ): Promise<void> {
+  async sendPasswordResetEmail(to: string, _name?: string | null, _token?: string): Promise<void> {
     this.log('password-reset', to);
   }
 
@@ -32,10 +28,7 @@ export class MailerService {
     this.log('password-changed', to);
   }
 
-  async sendEmailVerification(
-    to: string,
-    _data?: string | Record<string, unknown>
-  ): Promise<void> {
+  async sendEmailVerification(to: string, _data?: string | Record<string, unknown>): Promise<void> {
     this.log('email-verification', to);
   }
 
@@ -58,7 +51,11 @@ export class MailerService {
     this.log('two-factor-disabled', to);
   }
 
-  async sendTemplateEmail(to: string, template: string, _data?: Record<string, unknown>): Promise<void> {
+  async sendTemplateEmail(
+    to: string,
+    template: string,
+    _data?: Record<string, unknown>
+  ): Promise<void> {
     this.log(`template:${template}`, to);
   }
 }
