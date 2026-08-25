@@ -1,5 +1,8 @@
 # Dhanam Core
 
+[![CI](https://github.com/madfam-org/dhanam-core/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/madfam-org/dhanam-core/actions/workflows/ci.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+
 **The AGPLv3 open core of [Dhanam](https://github.com/madfam-org) — a personal‑finance app for budgeting, tracking your finances & assets, and planning your wealth.**
 
 Dhanam Core is a self‑hostable monorepo containing the domain heart of Dhanam:
