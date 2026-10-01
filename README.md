@@ -111,6 +111,45 @@ all excluded‑module imports and internal hostnames.
 Contributions that finish wiring the open core into a fully green build are
 welcome.
 
+## Security baseline
+
+- **`next` is pinned to 16.3.8** in every workspace that declares it
+  (`apps/web`, `packages/ui`, `packages/shared`, `packages/simulations`,
+  `packages/config`). GHSA-vcvr-r3jv-pc5j is a critical remote code execution
+  in `next/og` `ImageResponse` affecting `next >=16.2.0 <16.3.6`. Dhanam Core
+  does not import `next/og`, but it was on 16.3.3 and was moved to the patched
+  release. Do not pin an older 16.x.
+- **`eslint-config-next` and `@next/eslint-plugin-next` stay on `^15.1.6`.**
+  Moving them to 16 breaks the `FlatCompat`-based shared config in
+  `packages/config/eslint/nextjs.mjs`. They are lint-time only and never ship
+  in a build; upgrading them is a separate migration to a native flat config.
+
+## Testing
+
+`pnpm test` runs each workspace's jest through turbo. The honest state:
+
+- `packages/simulations` has a smoke spec
+  (`src/utils/__tests__/statistics.util.spec.ts`), and its `test` script runs
+  **without** `--passWithNoTests`, so it fails if its tests disappear.
+- `apps/api`, `apps/web`, `packages/shared` and `packages/ui` have **no tests**
+  and run `jest --passWithNoTests`, so they pass vacuously. `apps/api` and
+  `apps/web` also have no jest config yet: a first TypeScript spec there needs a
+  ts-jest config (`packages/shared/jest.config.js` is a template). When a
+  workspace gains its first spec, drop `--passWithNoTests` from its script in
+  the same change.
+
+## Related repositories
+
+Sibling open-source projects from the same maintainers, useful if you self-host
+Dhanam Core. Neither is required.
+
+- [janua](https://github.com/madfam-org/janua): an AGPL OIDC identity provider.
+  Dhanam Core ships local JWT auth; to put SSO in front of it, see
+  [`docs/guides/ECOSYSTEM_INTEGRATION.md`](https://github.com/madfam-org/janua/blob/main/docs/guides/ECOSYSTEM_INTEGRATION.md).
+- [enclii](https://github.com/madfam-org/enclii): an AGPL self-hosted deployment
+  platform. Its service manifest format is
+  [`docs/reference/service-spec.md`](https://github.com/madfam-org/enclii/blob/main/docs/reference/service-spec.md).
+
 ## Contributing & license
 
 By contributing you agree your contributions are licensed under
